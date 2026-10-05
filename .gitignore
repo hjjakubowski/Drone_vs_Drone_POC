@@ -1,2 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+
+# Local configuration
+.env
+*.local
+
+# Build and distribution output
+build/
+dist/
+*.spec
+
+# Logs and runtime output
+logs/*
+*.log
+*.tmp
+
+# Large media and generated data
 *.mp4
-*.txt
+*.avi
+*.mov
+*.mkv
+*.webm
+datasets/recordings/raw/
+datasets/recordings/processed/
+datasets/recordings/exports/
+
+# Model artifacts
+*.onnx
+*.engine
+*.pt
+*.pth
+*.weights
+
+# Research artifacts
+research/**/outputs/
+research/**/results/
+research/**/plots/

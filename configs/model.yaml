@@ -1,0 +1,4 @@
+model:
+  active_model_dir: models/production
+  backend: placeholder
+  confidence_threshold: 0.5

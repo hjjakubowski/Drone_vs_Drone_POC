@@ -1,0 +1,13 @@
+# Testing
+pytest>=8.0
+pytest-qt>=4.4
+
+# Quality
+ruff>=0.5
+mypy>=1.10
+
+# Desktop packaging
+pyinstaller>=6.0
+
+# Import validation
+pip-check-reqs>=2.5

@@ -1,0 +1,4 @@
+navigation:
+  mode: proportional_navigation
+  enabled: false
+  guidance_gain: 3.0

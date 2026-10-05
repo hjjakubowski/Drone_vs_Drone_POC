@@ -1,0 +1,174 @@
+* {
+    font-family: "Inter", "Segoe UI", "Arial", sans-serif;
+    letter-spacing: 0;
+}
+
+QWidget#mainWindow,
+QWidget#viewsPage,
+QWidget#hudPage {
+    background: #0b0f10;
+    color: #d7e0e0;
+}
+
+QLabel#appTitle {
+    color: #e6eeee;
+    font-size: 30px;
+    font-weight: 700;
+}
+
+QLabel#appSubtitle,
+QLabel#hintText {
+    color: #7f9292;
+    font-size: 14px;
+}
+
+QLabel#headerMeta {
+    color: #4fb477;
+    border: 1px solid #2b3a3f;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QFrame#contentFrame {
+    background: #101617;
+    border: 1px solid #223035;
+    border-radius: 6px;
+    padding: 18px;
+}
+
+QFrame#viewCard {
+    background: #151d20;
+    border: 1px solid #2b3a3f;
+    border-radius: 6px;
+}
+
+QFrame#viewCard:hover {
+    border: 1px solid #4fb477;
+    background: #182225;
+}
+
+QFrame#viewCard:focus {
+    border: 1px solid #d6a84f;
+}
+
+QLabel#viewCardTitle {
+    color: #f0f5f5;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+QLabel#viewCardStatusReady,
+QLabel#statusReady {
+    color: #4fb477;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+QLabel#viewCardStatusError,
+QLabel#statusError {
+    color: #d95c5c;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+QLabel#statusWarning {
+    color: #d6a84f;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+QLabel#viewCardVideo {
+    color: #d7e0e0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QLabel#viewCardDescription {
+    color: #9fb2b2;
+    font-size: 13px;
+    line-height: 18px;
+}
+
+QLabel#viewCardMeta {
+    color: #4fb477;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+QFrame#hudTopBar {
+    background: #111719;
+    border-bottom: 1px solid #2b3a3f;
+}
+
+QLabel#hudTitle {
+    color: #f0f5f5;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+QLabel#hudTime {
+    color: #d7e0e0;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+QPushButton#secondaryButton {
+    background: #151d20;
+    color: #d7e0e0;
+    border: 1px solid #2b3a3f;
+    border-radius: 4px;
+    padding: 8px 14px;
+    font-weight: 600;
+}
+
+QPushButton#secondaryButton:hover {
+    border-color: #4fb477;
+}
+
+QWidget#videoHudCanvas {
+    background: #050808;
+    border: 1px solid #223035;
+    border-radius: 6px;
+}
+
+QFrame#sidePanel {
+    background: transparent;
+}
+
+QFrame#statusStrip,
+QFrame#telemetryPanel {
+    background: #111719;
+    border: 1px solid #223035;
+    border-radius: 6px;
+}
+
+QLabel#panelTitle {
+    color: #f0f5f5;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+QLabel#fieldLabel {
+    color: #7f9292;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+QLabel#fieldValue {
+    color: #d7e0e0;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+QProgressBar {
+    background: #0b0f10;
+    border: 1px solid #2b3a3f;
+    border-radius: 3px;
+    min-height: 8px;
+}
+
+QProgressBar::chunk {
+    background: #4fb477;
+    border-radius: 2px;
+}

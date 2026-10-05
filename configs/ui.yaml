@@ -1,0 +1,16 @@
+application:
+  title: INZ HUD
+  initial_screen: views
+  theme: tactical_dark
+  fullscreen: false
+
+views:
+  count: 4
+  auto_start_video: true
+  return_to_views_on_video_end: true
+
+hud:
+  show_trajectory_placeholder: true
+  show_grid: true
+  show_corner_markers: true
+  show_center_reticle: true
