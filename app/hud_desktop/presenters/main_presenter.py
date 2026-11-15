@@ -25,7 +25,7 @@ class MainPresenter(QObject):
     def _start_hud(self, view_id: str) -> None:
         selected_view = self._views.get(view_id)
         if selected_view is None:
-            self._window.show_error("Nie znaleziono wybranego widoku.")
+            self._window.show_error("Selected view not found.")
             return
 
         self.stop()

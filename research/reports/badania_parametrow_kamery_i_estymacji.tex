@@ -1,0 +1,177 @@
+% Samodzielny materiał roboczy. Do włączenia do pracy można przenieść
+% treść od \section do bibliografii i dostosować sposób cytowania.
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[polish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{geometry}
+\usepackage{hyperref}
+\geometry{margin=2.5cm}
+
+\title{Wstępne wyznaczenie parametrów kamery i badanie estymacji odległości}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Cel i zakres badań}
+
+Celem doświadczeń było wyznaczenie przybliżonych parametrów kamery potrzebnych do przeliczenia położenia obiektu w obrazie na wielkości kątowe oraz wstępne sprawdzenie, czy na podstawie zmiany rozmiaru obiektu można oszacować jego głębokość i prędkość zbliżania. Badania stanowią przygotowanie do analizy parametrów wykorzystywanych w nawigacji proporcjonalnej. Dotyczą zapisanego obrazu; nie obejmują sterowania lotem ani weryfikacji wykonania manewru.
+
+Doświadczenia przeprowadzono kamerą drona DJI Lito X1. Jako obiekt referencyjny wykorzystano nieruchomy karton o zmierzonej szerokości $W=0{,}38\,\mathrm{m}$ i wysokości $0{,}18\,\mathrm{m}$. Zastosowanie przedmiotu o znanych wymiarach umożliwiło porównanie jego obrazu z orientacyjnie zmierzoną odległością. Przedmiot ten nie odzwierciedla jednak w pełni geometrii i zmiennej sylwetki śledzonego drona.
+
+\section{Założenia modelu kamery}
+
+Przyjęto uproszczony model kamery otworkowej bez korekcji dystorsji. Dla punktu o współrzędnych $(X,Y,Z)$ w układzie kamery jego współrzędne obrazowe $(u,v)$ są opisane zależnościami \cite{opencv}:
+\begin{equation}
+u=f_x\frac{X}{Z}+c_x, \qquad v=f_y\frac{Y}{Z}+c_y,
+\label{eq:pinhole}
+\end{equation}
+gdzie $f_x$ i $f_y$ oznaczają ogniskowe wyrażone w pikselach, a $(c_x,c_y)$ jest punktem głównym obrazu. Przyjęto oś $u$ skierowaną w prawo, oś $v$ w dół, a oś $Z$ do przodu wzdłuż osi optycznej.
+
+Jeśli odcinek o rzeczywistej szerokości $W$ jest w przybliżeniu równoległy do poziomej osi obrazu i znajduje się na głębokości $Z$, z~równania~\eqref{eq:pinhole} wynika przybliżenie
+\begin{equation}
+w \approx \frac{f_x W}{Z},\qquad
+f_x \approx \frac{wZ}{W},\qquad
+\widehat Z \approx \frac{f_xW}{w},
+\label{eq:distance}
+\end{equation}
+gdzie $w$ jest szerokością obiektu w pikselach. $\widehat Z$ oznacza przybliżoną głębokość wzdłuż osi kamery; nie musi być odległością euklidesową od obiektu. Obrót płaszczyzny obiektu, zmiana jego sylwetki, niedokładne określenie odległości oraz błędy pomiaru krawędzi wpływają na wynik.
+
+W eksperymentach użyto nagrań o rozdzielczości $1920\times1080$ pikseli i klatkażu około $29{,}97$ kl./s. Parametry wyrażone w pikselach odnoszą się do tej geometrii obrazu. Ogniskowe i punkt główny należy dostosować w razie zmiany skali lub kadrowania obrazu \cite{opencv}. Producent podaje dla kamery Lito X1 m.in. pole widzenia $82{,}1^\circ$, ale w dostępnej specyfikacji nie określono jednoznacznie osi tego kąta dla zastosowanego trybu wideo. Nie przyjęto więc tej wartości bezpośrednio jako poziomego pola widzenia \cite{dji}.
+
+\section{Pomiary statyczne kartonu}
+
+\subsection{Metoda}
+
+Przygotowano trzy krótkie nagrania nieruchomego kartonu z orientacyjnych odległości 1, 2 i 3 m. Na każdym ujęciu kamera była skierowana możliwie prostopadle do przedniej powierzchni kartonu, umieszczonego w pobliżu środka kadru. Odległość odnosi się w założeniu do położenia kamery względem przedniej powierzchni obiektu; jej niepewność nie została osobno wyznaczona.
+
+Z każdego nagrania wybrano pięć klatek. Ręcznie wskazano cztery narożniki przedniej powierzchni kartonu, a następnie wyznaczono długości górnej i dolnej krawędzi w pikselach. Jako szerokość $w$ przyjęto średnią arytmetyczną tych długości. Współrzędne narożników, wyniki oraz obrazy z oznaczeniami zapisano w repozytorium \cite{pomiary}. Ręczny pomiar umożliwił kontrolę, która część obiektu jest mierzona, bez dodawania niezweryfikowanego modelu segmentacyjnego. Jego ograniczeniem jest zależność od osoby wskazującej narożniki i od widoczności krawędzi.
+
+\subsection{Wyniki i parametry robocze}
+
+W tabeli~\ref{tab:static} przedstawiono średnią szerokość obrazu kartonu oraz średnią wartość $f_x$ obliczoną dla każdej z trzech odległości. Każda średnia obejmuje pięć pomiarów z jednego nagrania; nie są to niezależne powtórzenia całego ustawienia pomiarowego.
+\begin{table}[htbp]
+\centering
+\caption{Wyniki pomiarów statycznych kartonu.}
+\label{tab:static}
+\begin{tabular}{lrrr}
+\toprule
+Odległość [m] & Liczba klatek & Średnia szerokość [px] & Średnie $f_x$ [px] \\
+\midrule
+1 & 5 & 576,0 & 1515,8 \\
+2 & 5 & 285,3 & 1501,7 \\
+3 & 5 & 192,3 & 1518,2 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Jako wartość roboczą wybrano średnią wartości z odległości 1 i 2 m:
+\begin{equation}
+f_x \approx \frac{1515{,}8+1501{,}7}{2} \approx 1509\,\mathrm{px}.
+\end{equation}
+Pomiar z 3 m pozostawiono do orientacyjnej kontroli. Dla średniej szerokości $192{,}3$ px równanie~\eqref{eq:distance} daje $\widehat Z\approx2{,}98$ m wobec deklarowanych 3 m. Kontrola ta dotyczy jednego ustawienia z tego samego środowiska; nie stanowi pełnej walidacji kamery w innych warunkach.
+
+Ponieważ nie przeprowadzono pełnej kalibracji, przyjęto $f_y\approx f_x=1509$ px oraz punkt główny w przybliżeniu w środku klatki: $c_x=960$ px, $c_y=540$ px. Są to założenia, a nie niezależne pomiary. Nie wyznaczono współczynników dystorsji ani niepewności parametrów wewnętrznych.
+
+\section{Badanie zbliżania kamery do kartonu}
+
+\subsection{Przebieg i sposób obliczeń}
+
+Nagrano ujęcie, w którym kamera zbliżała się do nieruchomego kartonu z orientacyjnej odległości 3 m do 1 m, po czym zatrzymała się. Podczas nagrania podawano mijane odległości. Jako orientacyjne znaczniki czasowe przyjęto: 3 m na początku, 2,5 m w 5 s, 2 m w 7 s, 1,5 m w 8,5 s i 1 m w 10 s. Czasy są przybliżone i obciążone niepewnością, w tym możliwym opóźnieniem wypowiedzi względem przekroczenia znacznika.
+
+Na nagraniu wykonano dodatkowo 18 ręcznych pomiarów narożników, zagęszczonych w pobliżu wskazanych chwil \cite{pomiary}. Szerokości kartonu przeliczono na głębokość według równania~\eqref{eq:distance}, przyjmując $f_x=1509$ px. Ponieważ klatki nie przypadały dokładnie na wszystkie chwile odniesienia, głębokość w chwilach znaczników wyznaczono przez interpolację liniową pomiędzy sąsiednimi pomiarami. Wartości odniesienia nie były wykorzystywane do wyznaczenia interpolowanych głębokości.
+
+Średnią szybkość zmniejszania głębokości na przedziale czasu obliczono jako
+\begin{equation}
+\overline{V}_Z = \frac{\widehat Z(t_1)-\widehat Z(t_2)}{t_2-t_1}.
+\label{eq:speed}
+\end{equation}
+Wynik ten porównano ze średnią uzyskaną z podanych odległości i czasów. Taka ocena dotyczy średniej na przedziale, a nie chwilowej prędkości w każdej klatce.
+
+\subsection{Odległość i prędkość}
+
+\begin{table}[htbp]
+\centering
+\caption{Porównanie przybliżonej głębokości z orientacyjnymi znacznikami. Różnica to wynik z obrazu minus znacznik.}
+\label{tab:dynamic}
+\begin{tabular}{lrrr}
+\toprule
+Czas [s] & Znacznik [m] & $\widehat Z$ [m] & Różnica [cm] \\
+\midrule
+0,0 & 3,00 & 2,963 & $-3,7$ \\
+5,0 & 2,50 & 2,516 & $+1,6$ \\
+7,0 & 2,00 & 1,947 & $-5,3$ \\
+8,5 & 1,50 & 1,504 & $+0,4$ \\
+10,0 & 1,00 & 1,040 & $+4,0$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Średnia bezwzględna różnica dla czterech znaczników od 5 do 10 s wyniosła około $2{,}8$ cm. Największa z tych czterech różnic miała wartość bezwzględną około $5{,}3$ cm. Wielkości te opisują tylko podane porównanie; nie stanowią niepewności pomiarowej ani gwarantowanej dokładności. W szczególności różnicy $0{,}4$ cm nie należy interpretować jako potwierdzenia dokładności milimetrowej.
+
+\begin{table}[htbp]
+\centering
+\caption{Średnia prędkość zbliżania na przedziałach czasowych.}
+\label{tab:speed}
+\begin{tabular}{lrrr}
+\toprule
+Przedział [s] & Ze znaczników [m/s] & Z obrazu [m/s] & Różnica [m/s] \\
+\midrule
+5--7 & 0,250 & 0,284 & $+0,034$ \\
+7--8,5 & 0,333 & 0,295 & $-0,038$ \\
+8,5--10 & 0,333 & 0,309 & $-0,024$ \\
+5--10 & 0,300 & 0,295 & $-0,005$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Średnia z obrazu na całym odcinku 5--10 s jest zbliżona do średniej ze znaczników, natomiast różnice na krótszych odcinkach są większe. Przybliżone określenie chwil znaczników może istotnie wpływać na takie porównanie. Próbki na końcu nagrania, około 10,41 s i 11,01 s, dawały odpowiednio około 0,974 m i 0,970 m; sam ten wynik nie pozwala ustalić, jaka była dokładna odległość obiektywu po zatrzymaniu.
+
+\section{Wymiary obiektu docelowego i parametry nawigacji}
+
+Zmierzony E99 Pro miał korpus o wymiarach $11{,}5\times5{,}5\times4{,}5$ cm. Dla drona z rozłożonymi wirnikami zmierzono długość 20,5 cm, szerokość 18,5 cm i wysokość 5 cm; odległość po przekątnej między śmigłami wynosiła 24 cm. Jako roboczą szerokość w równaniu~\eqref{eq:distance} przyjęto $W_{\mathrm{ref}}=0{,}185$ m. Wartość ta nie jest jednak gwarantowaną szerokością poziomego rzutu celu: zależy ona od orientacji drona, widoczności śmigieł oraz sposobu obejmowania sylwetki przez ramkę.
+
+Na podstawie położenia środka ramki $(x_c,y_c)$ i przyjętych parametrów kamery można wyznaczyć kąty celu względem osi kamery:
+\begin{equation}
+\lambda_x=\arctan\left(\frac{x_c-c_x}{f_x}\right),\qquad
+\lambda_y=\arctan\left(\frac{y_c-c_y}{f_y}\right).
+\label{eq:los}
+\end{equation}
+Ich zmianę w czasie można przybliżać różnicą kolejnych wartości podzieloną przez odstęp czasowy klatek. Otrzymany wynik opisuje zmianę kierunku \emph{względem kamery}. Obrót kamery lub gimbala może wywołać zmianę położenia nieruchomego obiektu w obrazie; zostało to zaobserwowane na pomocniczym nagraniu z obrotem kamery. Nie wykonano na nim ilościowego pomiaru orientacji.
+
+Prędkość zbliżania między dwoma obiektami można zdefiniować jako $V_c=-\mathrm{d}R/\mathrm{d}t$, gdzie $R$ jest ich wzajemną odległością. Prędkość $-\mathrm{d}Z/\mathrm{d}t$ z obrazu jest zmianą głębokości kamery i może stanowić przybliżenie $V_c$ przy odpowiedniej geometrii, zwłaszcza gdy cel znajduje się blisko osi optycznej. Nie jest ona ogólnie równoważna zmianie odległości euklidesowej.
+
+W uproszczonym modelu dwukanałowym można rozważyć wielkości $a_x\approx N V_c\dot\lambda_x$ i $a_y\approx N V_c\dot\lambda_y$, z roboczą wartością $N=3$. Ze względu na pomiar kątów w układzie ruchomej kamery i przybliżony charakter $V_c$ są to jedynie wskazania modelu. Nie stanowią one zweryfikowanego wektora przyspieszenia w układzie świata. W pracy Bhattacharyi omówiono geometrię LOS i wariant True Proportional Navigation w sekcjach 3.1.1--3.1.2, s. 9--11; jego założeń nie należy automatycznie utożsamiać z warunkami niniejszego eksperymentu \cite{bhattacharya}.
+
+Warunkowy czas wynikający z ekspansji obrazu można przybliżyć wzorem
+\begin{equation}
+T_{\mathrm{exp}} \approx \frac{2wh}{w\dot h+h\dot w}.
+\end{equation}
+Wzór ten wynika z założenia, że pole obrazu obiektu $A=wh$ zmienia się w przybliżeniu jak $1/Z^2$: wtedy $-Z/\dot Z\approx2A/\dot A$. Zakłada on odpowiednio stałą geometrię rzutu i kontynuację zaobserwowanej zmiany głębokości. Przy braku dodatniej ekspansji wartość nie jest wyznaczana; dodatnia ekspansja sama nie dowodzi kursu kolizyjnego. Jeśli $\dot w$ i $\dot h$ są wyrażone w px/s, wynik jest w sekundach. W eksperymencie z kartonem nie zweryfikowano TTC.
+
+\section{Rozdzielczość modelu i układ współrzędnych}
+
+Przeprowadzono oddzielny test zgodności skalowania dla silnika TensorRT o wejściu $960\times544$ px. Porównano wyniki dla klatki $1920\times1080$ i tej samej klatki pomniejszonej do $960\times540$, przeliczając wyniki do wspólnej skali. W 29 z 30 sprawdzonych przypadków uzyskano pary detekcji; jedną klatkę pominięto z powodu braku detekcji. W porównanych parach wypisane wartości IoU wynosiły $1{,}000$ po zaokrągleniu do trzech miejsc, a współrzędne środka i rozmiarów stanu trackera zgadzały się z ramką wyniku.
+
+W tych sprawdzonych przypadkach wynik odpowiadał skali klatki przekazanej do analizy, czyli $1920\times1080$. Test uzasadnia stosowanie przyjętych parametrów w tym układzie, ale nie ocenia poprawności detekcji względem ręcznej anotacji ani dokładności pochodnych. Tracker był resetowany przed każdym porównaniem; ciągłości śledzenia w czasie nie badano tym testem.
+
+\section{Zalety, ograniczenia i kierunek dalszej oceny}
+
+Zaletą metody jest wykorzystanie łatwo dostępnego obiektu o znanej szerokości, prostych pomiarów obrazu i zależności geometrycznych. Dzięki zapisaniu narożników i oznaczonych klatek możliwa jest kontrola sposobu pomiaru. Test zbliżania pozwolił porównać zmiany głębokości ze znacznikami bez potrzeby pomiaru osobnych prędkości kamery i obiektu.
+
+Wyniki mają charakter wstępny. Badanie dynamiczne obejmowało jedno nagranie, kilkanaście ręcznych próbek i orientacyjne znaczniki czasu. Pomiary z jednego otoczenia nie określają wpływu innych warunków oświetlenia, dystorsji, kadrowania ani błędów detektora. Przyjęta szerokość E99 może się różnić od szerokości jego rzutu, a filtry śledzenia i różniczkowanie mogą wprowadzać szum i opóźnienie. Kompensacja ruchu kamery w BoT-SORT wspomaga śledzenie, lecz nie zastępuje pomiaru pełnej orientacji kamery \cite{botsort}.
+
+Dalsza ocena powinna obejmować powtórzenia ruchu, dokładniejsze odniesienie czasowe oraz pomiary E99 na znanych odległościach i pod różnymi kątami. Przedstawione wyniki nie potwierdzają skuteczności przechwycenia ani wykonania obliczonego manewru.
+
+\begin{thebibliography}{9}
+\bibitem{opencv} OpenCV, \emph{Camera Calibration and 3D Reconstruction}, opis modelu kamery otworkowej i macierzy parametrów wewnętrznych, \url{https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html}, dostęp: 13.11.2026.
+\bibitem{dji} DJI, \emph{DJI Lito X1 -- Specs}, sekcje Camera i Gimbal, \url{https://www.dji.com/lito-x1/specs}, dostęp: 13.11.2026.
+\bibitem{botsort} N. Aharon, R. Orfaig, B.-Z. Bobrovsky, \emph{BoT-SORT: Robust Associations Multi-Pedestrian Tracking}, 2022, sekcje 3.1--3.2, s. 3--4, \url{https://arxiv.org/pdf/2206.14651}.
+\bibitem{bhattacharya} A. Bhattacharya, \emph{Toward Increased Airspace Safety: Quadrotor Guidance for Targeting Aerial Objects}, praca magisterska, Carnegie Mellon University, 2020, sekcje 3.1.1--3.1.2, s. 9--11, \url{https://publications.ri.cmu.edu/storage/publications/2020/08/MSR_Thesis_AnishBhattacharya.pdf}.
+\bibitem{pomiary} Materiały własne autora: katalogi \texttt{research/experiments/pomiar\_1m}, \texttt{pomiar\_2m}, \texttt{pomiar\_3m} oraz \texttt{pomiar\_zblizania\_dodatkowe}; pliki \texttt{pomiary.csv} i oznaczone klatki.
+\end{thebibliography}
+\end{document}

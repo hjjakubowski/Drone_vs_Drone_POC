@@ -16,7 +16,7 @@ class ViewsPage(QWidget):
         title = QLabel("AUTONOMOUS DRONE HUD")
         title.setObjectName("appTitle")
 
-        subtitle = QLabel("Panel wyboru widoku misji")
+        subtitle = QLabel("Mission view selection")
         subtitle.setObjectName("appSubtitle")
 
         header_meta = QLabel("FRONTEND MODE  |  BACKEND PLACEHOLDER  |  VIDEO PLAYBACK")
@@ -38,7 +38,7 @@ class ViewsPage(QWidget):
         cards_frame.setObjectName("contentFrame")
         cards_frame.setLayout(self._cards_grid)
 
-        footer = QLabel("Wybierz widok, aby uruchomic ekran HUD.")
+        footer = QLabel("Select a view to open the HUD.")
         footer.setObjectName("hintText")
 
         layout = QVBoxLayout(self)

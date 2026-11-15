@@ -37,7 +37,7 @@ class MainWindow(QWidget):
         self._stack.setCurrentWidget(self.hud_page)
 
     def show_error(self, message: str) -> None:
-        QMessageBox.critical(self, "Blad aplikacji", message)
+        QMessageBox.critical(self, "Application error", message)
 
     def keyPressEvent(self, event) -> None:  # noqa: ANN001
         if event.key() == Qt.Key.Key_Escape and self._stack.currentWidget() is self.hud_page:

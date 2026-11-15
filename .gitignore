@@ -39,9 +39,12 @@ logs/*
 *.mov
 *.mkv
 *.webm
+*.pdf
 datasets/recordings/raw/
 datasets/recordings/processed/
 datasets/recordings/exports/
+datasets/AOD_4
+datasets/ds_drone_hel_plane
 
 *.onnx
 *.engine

@@ -34,7 +34,7 @@ def load_view_definitions() -> list[ViewDefinition]:
         definitions.append(
             ViewDefinition(
                 id=f"view-{index + 1}",
-                name=f"Widok-{index + 1}",
+                name=f"View-{index + 1}",
                 video_path=video_path,
                 description=_description_for(index),
                 status="READY" if video_path.exists() else "NO VIDEO",
@@ -45,9 +45,9 @@ def load_view_definitions() -> list[ViewDefinition]:
 
 def _description_for(index: int) -> str:
     descriptions = [
-        "Pościg.",
-        "Przechwycenie od boku.",
-        "Przechwycenie od przodu.",
-        "Przechwycenie od dołu.",
+        "Pursuit.",
+        "Side approach.",
+        "Front approach.",
+        "Approach from below.",
     ]
     return descriptions[index]

@@ -16,14 +16,14 @@ class HudPage(QWidget):
         super().__init__()
         self.setObjectName("hudPage")
 
-        self._view_name = QLabel("WIDOK")
+        self._view_name = QLabel("VIEW")
         self._view_name.setObjectName("hudTitle")
         self._playback_status = QLabel("IDLE")
         self._playback_status.setObjectName("statusReady")
         self._time_label = QLabel("00:00 / 00:00")
         self._time_label.setObjectName("hudTime")
 
-        self._back_button = QPushButton("Powrot")
+        self._back_button = QPushButton("Back")
         self._back_button.setObjectName("secondaryButton")
         self._back_button.clicked.connect(self.request_back)
 
