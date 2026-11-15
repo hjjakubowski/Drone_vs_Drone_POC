@@ -1,4 +1,22 @@
 model:
   active_model_dir: models/production
   backend: placeholder
-  confidence_threshold: 0.5
+  confidence_threshold: 0.1
+  max_missing_frames: 5
+  weights: models/production/yolo26naod4tunedwithowndataset.pt
+  engine: models/production/yolo26naod4tunedwithowndataset_FP16.engine
+  imgsz: 960
+  rect: true
+  quantize: 16
+  classes: [2]
+  tracker: project/vision/custom_botsort.yaml
+
+export:
+  format: engine
+  quantize: 16
+  device: "0"
+  imgsz: [544, 960]
+  batch: 1
+  workspace: 1
+  dynamic: false
+  nms: false

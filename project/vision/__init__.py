@@ -1,1 +1,1 @@
-"""Computer-vision integration boundary for YOLO/RT-DETR detectors."""
+"""Planned YOLO26 and BoT-SORT integration."""

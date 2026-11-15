@@ -34,6 +34,7 @@ logs/*
 
 # Large media and generated data
 *.mp4
+*.MP4
 *.avi
 *.mov
 *.mkv
@@ -42,7 +43,6 @@ datasets/recordings/raw/
 datasets/recordings/processed/
 datasets/recordings/exports/
 
-# Model artifacts
 *.onnx
 *.engine
 *.pt
@@ -53,3 +53,5 @@ datasets/recordings/exports/
 research/**/outputs/
 research/**/results/
 research/**/plots/
+
+plans

@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QMessageBox, QStackedWidget, QVBoxLayout, QWidget
 
-from app.hud_desktop.ui.pages.hud_page import HudPage
-from app.hud_desktop.ui.pages.views_page import ViewsPage
+from app.hud_desktop.ui.hud_page import HudPage
+from app.hud_desktop.ui.views_page import ViewsPage
 
 
 class MainWindow(QWidget):
+    closing = Signal()
+
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("INZ HUD")
@@ -42,3 +44,7 @@ class MainWindow(QWidget):
             self.hud_page.request_back()
             return
         super().keyPressEvent(event)
+
+    def closeEvent(self, event) -> None:  # noqa: ANN001
+        self.closing.emit()
+        super().closeEvent(event)

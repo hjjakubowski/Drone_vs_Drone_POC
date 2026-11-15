@@ -3,12 +3,43 @@ PySide6>=6.7
 
 # Video processing libraries
 opencv-python>=4.10
+Pillow>=10.0
+ImageHash>=4.3.2
 
 # Numerical computing
 numpy>=1.26
 
+# Dataset analysis, visualizations and report export
+pandas>=2.2
+matplotlib>=3.8
+seaborn>=0.13.2
+Jinja2>=3.1
+tabulate>=0.9
+tqdm>=4.66
+
 # Configuration
 PyYAML>=6.0
 
-# Model inference
+# Model inference and YOLO26
 onnxruntime>=1.18
+ultralytics==8.4.190
+# NVIDIA CUDA 12.6: install the GPU builds before installing this requirements file:
+# .venv/bin/python -m pip install torch==2.14.1+cu126 torchvision==0.29.1+cu126 --index-url https://download.pytorch.org/whl/cu126
+torch>=2.2
+torchvision>=0.17
+
+# BoT-SORT tracking (implementation included in Ultralytics)
+lap>=0.5.12
+
+# ONNX export and graph simplification
+onnx>=1.12.0
+onnxslim>=0.1.82
+
+# TensorRT FP16 export for the Linux x86_64 / NVIDIA CUDA 12 environment
+tensorrt-cu12>=10.13,<11; platform_system == "Linux" and platform_machine == "x86_64"
+
+# Jupyter notebook execution and display
+IPython>=8.20
+ipykernel>=6.29
+nbformat>=5.10
+nbclient>=0.10

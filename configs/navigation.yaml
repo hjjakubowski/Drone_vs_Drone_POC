@@ -2,3 +2,15 @@ navigation:
   mode: proportional_navigation
   enabled: false
   guidance_gain: 3.0
+  camera: DJI Lito X1
+  target: E99 Pro (black)
+  # Przybliżenia dla oryginalnej klatki 1920x1080, zoom 1x.
+  image_width: 1920
+  image_height: 1080
+  fx: 1509.0
+  fy: 1509.0
+  cx: 960.0
+  cy: 540.0
+  target_width_m: 0.185
+  closing_speed_window: 3
+  ttc_denominator_min: 0.0001
