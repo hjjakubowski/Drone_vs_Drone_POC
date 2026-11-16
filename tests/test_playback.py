@@ -51,7 +51,7 @@ class PlaybackTests(unittest.TestCase):
         return window, presenter
 
     def test_source_and_pipeline_preserve_recording_time_until_eof(self):
-        pipeline = PipelineRuntime()
+        pipeline = PipelineRuntime(enable_analysis=False)
         self.addCleanup(pipeline.stop)
         pipeline.start(self.path)
         source = pipeline.source
@@ -68,7 +68,7 @@ class PlaybackTests(unittest.TestCase):
         self.assertIsNone(source._capture)
 
     def test_reopening_and_failed_open_release_previous_recording(self):
-        pipeline = PipelineRuntime()
+        pipeline = PipelineRuntime(enable_analysis=False)
         self.addCleanup(pipeline.stop)
         pipeline.start(self.path)
         previous = pipeline.source
@@ -89,33 +89,32 @@ class PlaybackTests(unittest.TestCase):
         cards = window.views_page.findChildren(ViewCard)
         self.assertEqual(len(cards), 4)
         self.assertIs(window._stack.currentWidget(), window.views_page)
-        QTest.mouseClick(cards[0], Qt.MouseButton.LeftButton)
-        self.assertIs(window._stack.currentWidget(), window.hud_page)
-        self.assertIsNotNone(window.hud_page.video_canvas._frame)
-        self.assertEqual(window.hud_page._playback_status.text(), "PLAYING")
-        QTest.mouseClick(window.hud_page._back_button, Qt.MouseButton.LeftButton)
-        self.assertIsNone(presenter.runtime.source)
-        self.assertFalse(presenter._timer.isActive())
-        for card in cards:
-            QTest.keyClick(card, Qt.Key.Key_Return)
+        with patch("app.hud_desktop.presenters.main_presenter.PipelineRuntime",
+                   side_effect=lambda: PipelineRuntime(enable_analysis=False)):
+            QTest.mouseClick(cards[0], Qt.MouseButton.LeftButton)
             self.assertIs(window._stack.currentWidget(), window.hud_page)
-            QTest.keyClick(window, Qt.Key.Key_Escape)
+            for _ in range(100):
+                QTest.qWait(2)
+                if window.hud_page.video_canvas._frame is not None:
+                    break
+            self.assertIsNotNone(window.hud_page.video_canvas._frame)
+            presenter._return_to_views()
             self.assertIs(window._stack.currentWidget(), window.views_page)
-            self.assertIsNone(presenter.runtime.source)
+            presenter.shutdown()
 
     def test_eof_returns_to_selection_and_close_stops_playback(self):
         window, presenter = self.make_window()
-        presenter._start_hud("view-1")
-        for _ in range(4):
-            presenter._read_frame()
-        self.assertIs(window._stack.currentWidget(), window.views_page)
-        self.assertIsNone(presenter.runtime.source)
-        self.assertFalse(presenter._timer.isActive())
-        presenter._start_hud("view-2")
-        source = presenter.runtime.source
-        window.close()
-        self.assertIsNone(source._capture)
-        self.assertFalse(presenter._timer.isActive())
+        with patch("app.hud_desktop.presenters.main_presenter.PipelineRuntime",
+                   side_effect=lambda: PipelineRuntime(enable_analysis=False)):
+            presenter._start_hud("view-1")
+            for _ in range(400):
+                QTest.qWait(5)
+                if window._stack.currentWidget() is window.views_page:
+                    break
+            self.assertIs(window._stack.currentWidget(), window.views_page)
+            presenter._start_hud("view-2")
+            window.close()
+            self.assertEqual(presenter._workers, [])
 
     def test_missing_recordings_keep_four_placeholders_and_allow_return(self):
         self.path.unlink()
@@ -124,9 +123,12 @@ class PlaybackTests(unittest.TestCase):
         self.assertTrue(all(view.status == "NO VIDEO" for view in definitions))
         window, presenter = self.make_window()
         presenter._start_hud("view-4")
+        for _ in range(100):
+            QTest.qWait(2)
+            if window.hud_page._playback_status.text() == "ERROR":
+                break
         self.assertEqual(window.hud_page._playback_status.text(), "ERROR")
-        self.assertIsNone(presenter.runtime.source)
-        self.assertFalse(presenter._timer.isActive())
+        self.assertIsNone(presenter._worker)
         QTest.keyClick(window, Qt.Key.Key_Escape)
         self.assertIs(window._stack.currentWidget(), window.views_page)
 

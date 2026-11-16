@@ -20,17 +20,23 @@ class VideoHudCanvas(QWidget):
         self._view_name = ""
         self._progress = 0.0
         self._state = "idle"
+        self._telemetry: FrameTelemetry | None = None
+        self._error = ""
 
     def reset(self, view_name: str) -> None:
         self._frame = None
         self._view_name = view_name
         self._progress = 0.0
         self._state = "loading"
+        self._telemetry = None
+        self._error = ""
         self.update()
 
-    def show_error(self) -> None:
+    def show_error(self, message: str = "") -> None:
         self._frame = None
         self._state = "error"
+        self._telemetry = None
+        self._error = message
         self.update()
 
     def show_frame(self, telemetry: FrameTelemetry) -> None:
@@ -40,6 +46,7 @@ class VideoHudCanvas(QWidget):
             rgb.data, width, height, rgb.strides[0], QImage.Format.Format_RGB888
         ).copy()
         self._progress = telemetry.progress_percent / 100
+        self._telemetry = telemetry
         self._state = "playing"
         self.update()
 
@@ -56,7 +63,7 @@ class VideoHudCanvas(QWidget):
             self._draw_vignette(painter, target_rect)
 
         self._draw_hud_overlay(painter, target_rect)
-        self._draw_trajectory_placeholder(painter, target_rect)
+        self._draw_tracking(painter, target_rect)
         painter.end()
         super().paintEvent(event)
 
@@ -85,8 +92,9 @@ class VideoHudCanvas(QWidget):
         painter.drawRect(rect)
         painter.setPen(QColor("#9fb2b2"))
         painter.setFont(QFont("Arial", 14, QFont.Weight.Bold))
-        text = "VIDEO SOURCE NOT AVAILABLE" if self._state == "error" else "WAITING FOR VIDEO SOURCE"
-        painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, text)
+        text = f"ANALYSIS ERROR\n{self._error}" if self._state == "error" else "WAITING FOR VIDEO SOURCE"
+        painter.drawText(rect.adjusted(20, 20, -20, -20),
+                         Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, text)
         painter.restore()
 
     def _draw_vignette(self, painter: QPainter, rect: QRectF) -> None:
@@ -99,7 +107,6 @@ class VideoHudCanvas(QWidget):
         painter.save()
         green = QColor("#4fb477")
         muted = QColor("#6f8383")
-        warning = QColor("#d6a84f")
 
         painter.setPen(QPen(green, 1))
         painter.drawRect(rect)
@@ -129,42 +136,46 @@ class VideoHudCanvas(QWidget):
         painter.drawLine(QPointF(rect.left(), rect.top() + third_h), QPointF(rect.right(), rect.top() + third_h))
         painter.drawLine(QPointF(rect.left(), rect.top() + third_h * 2), QPointF(rect.right(), rect.top() + third_h * 2))
 
-        painter.setPen(warning)
+        painter.setPen(QColor("#d6a84f"))
         painter.setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        painter.drawText(rect.adjusted(18, 16, -18, -16), Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft, "TRAJECTORY PLACEHOLDER")
         painter.drawText(rect.adjusted(18, 16, -18, -16), Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight, self._view_name.upper())
         painter.restore()
 
-    def _draw_trajectory_placeholder(self, painter: QPainter, rect: QRectF) -> None:
+    def _draw_tracking(self, painter: QPainter, rect: QRectF) -> None:
+        telemetry = self._telemetry
+        if telemetry is None or self._frame is None:
+            return
+        track = telemetry.tracking
+        if track is None or track.state is None:
+            return
+        x, y, w, h = track.state[:4]
+        sx, sy = rect.width() / self._frame.width(), rect.height() / self._frame.height()
+        box = QRectF(rect.left() + (x - w / 2) * sx, rect.top() + (y - h / 2) * sy,
+                     w * sx, h * sy)
         painter.save()
-        path_pen = QPen(QColor("#d6a84f"), 2)
-        path_pen.setStyle(Qt.PenStyle.DashLine)
-        painter.setPen(path_pen)
-
-        points = self._trajectory_points(rect)
-        for index in range(len(points) - 1):
-            painter.drawLine(points[index], points[index + 1])
-
-        painter.setPen(QPen(QColor("#d6a84f"), 1))
-        painter.setBrush(QColor(214, 168, 79, 60))
-        for point in points:
-            painter.drawEllipse(point, 4, 4)
-
-        if points:
-            painter.setPen(QPen(QColor("#d95c5c"), 2))
-            painter.setBrush(QColor(217, 92, 92, 70))
-            painter.drawEllipse(points[-1], 12, 12)
-
+        painter.setClipRect(rect)
+        color = QColor("#4fb477" if track.detected else "#d6a84f")
+        pen = QPen(color, 2)
+        if not track.detected:
+            pen.setStyle(Qt.PenStyle.DashLine)
+        painter.setPen(pen)
+        painter.drawRect(box)
+        painter.drawText(QPointF(box.left(), max(rect.top() + 16, box.top() - 5)),
+                         f"{'DETECTION' if track.detected else 'PREDICTION'} ID {track.target_id}")
+        nav = telemetry.navigation
+        if nav is not None and nav.accel_x is not None and nav.accel_y is not None:
+            start = rect.center()
+            dx, dy = nav.accel_x * 10, nav.accel_y * 10
+            length = math.hypot(dx, dy)
+            if length > 120:
+                dx, dy = dx * 120 / length, dy * 120 / length
+            end = QPointF(start.x() + dx, start.y() + dy)
+            painter.setPen(QPen(QColor("#56c4eb"), 2))
+            painter.drawLine(start, end)
+            if length > 1:
+                angle = math.atan2(dy, dx)
+                for offset in (-0.5, 0.5):
+                    painter.drawLine(end, QPointF(end.x() - 10 * math.cos(angle + offset),
+                                                 end.y() - 10 * math.sin(angle + offset)))
+            painter.drawText(QPointF(start.x() + 8, start.y() + 18), "PN (scaled)")
         painter.restore()
-
-    def _trajectory_points(self, rect: QRectF) -> list[QPointF]:
-        progress = self._progress
-
-        points: list[QPointF] = []
-        for step in range(8):
-            t = step / 7
-            x = rect.left() + rect.width() * (0.16 + 0.68 * t)
-            wave = math.sin((t + progress * 0.35) * math.pi * 1.6)
-            y = rect.top() + rect.height() * (0.68 - 0.34 * t + 0.07 * wave)
-            points.append(QPointF(x, y))
-        return points

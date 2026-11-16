@@ -24,7 +24,7 @@ def run(argv: list[str] | None = None) -> int:
 
     window = MainWindow()
     presenter = MainPresenter(window)
-    app.aboutToQuit.connect(presenter.stop)
+    app.aboutToQuit.connect(presenter.shutdown)
     window.resize(1360, 820)
     window.show()
 

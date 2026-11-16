@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QLabel, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFileDialog, QFrame, QGridLayout, QHBoxLayout, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from app.hud_desktop.state.view_definitions import ViewDefinition
 
 
 class ViewsPage(QWidget):
     view_selected = Signal(str)
+    video_selected = Signal(str)
 
     def __init__(self) -> None:
         super().__init__()
@@ -19,7 +20,7 @@ class ViewsPage(QWidget):
         subtitle = QLabel("Mission view selection")
         subtitle.setObjectName("appSubtitle")
 
-        header_meta = QLabel("FRONTEND MODE  |  BACKEND PLACEHOLDER  |  VIDEO PLAYBACK")
+        header_meta = QLabel("VIDEO ANALYSIS  |  YOLO + BOT-SORT  |  PN ESTIMATES")
         header_meta.setObjectName("headerMeta")
 
         header = QHBoxLayout()
@@ -40,13 +41,21 @@ class ViewsPage(QWidget):
 
         footer = QLabel("Select a view to open the HUD.")
         footer.setObjectName("hintText")
+        open_button = QPushButton("Open video…")
+        open_button.clicked.connect(self._choose_video)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(42, 34, 42, 30)
         layout.setSpacing(24)
         layout.addLayout(header)
         layout.addWidget(cards_frame, stretch=1)
+        layout.addWidget(open_button)
         layout.addWidget(footer)
+
+    def _choose_video(self) -> None:
+        path, _ = QFileDialog.getOpenFileName(self, "Select recording", "", "Video (*.mp4 *.MP4)")
+        if path:
+            self.video_selected.emit(path)
 
     def set_views(self, views: list[ViewDefinition]) -> None:
         while self._cards_grid.count():
@@ -85,7 +94,7 @@ class ViewCard(QFrame):
         description.setObjectName("viewCardDescription")
         description.setWordWrap(True)
 
-        meta = QLabel("AUTO START  |  HUD OVERLAY  |  PLACEHOLDER TRAJECTORY")
+        meta = QLabel("AUTO START  |  TRACKING  |  NAVIGATION ESTIMATES")
         meta.setObjectName("viewCardMeta")
 
         top = QHBoxLayout()

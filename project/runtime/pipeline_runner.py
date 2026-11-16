@@ -1,4 +1,4 @@
-"""Sequential playback pipeline. Detection and PN are not connected yet."""
+"""Sequential video, detection and navigation pipeline, independent of Qt."""
 
 from __future__ import annotations
 
@@ -8,7 +8,13 @@ from pathlib import Path
 
 import numpy as np
 
+from project.config import load_config, project_root
+from project.navigation.pn_estimator import NavigationResult, ProportionalNavigation
 from project.video.video_source import VideoSource
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from project.vision.tracker_engine import TrackingResult
 
 
 @dataclass(frozen=True)
@@ -22,6 +28,10 @@ class FrameTelemetry:
     duration_ms: int
     source_fps: float
     playback_fps: float
+    tracking: TrackingResult | None = None
+    navigation: NavigationResult | None = None
+    fps_is_estimated: bool = False
+    analysis_fps: float | None = None
 
     @property
     def progress_percent(self) -> float:
@@ -33,22 +43,49 @@ class FrameTelemetry:
 class PipelineRuntime:
     """Own the decoder and advance one frame per call, without depending on Qt."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, enable_analysis: bool | None = None) -> None:
         self.source: VideoSource | None = None
+        self.tracker = None
+        self.estimator: ProportionalNavigation | None = None
+        self.enable_analysis = (load_config("runtime")["runtime"]["backend_enabled"]
+                                if enable_analysis is None else enable_analysis)
         self._last_tick: float | None = None
         self._playback_fps = 0.0
 
     def start(self, video_path: Path | str) -> None:
         self.stop()
         self.source = VideoSource(video_path)
+        try:
+            if self.enable_analysis:
+                from project.vision.tracker_engine import VisionTracker
+
+                model = load_config("model")["model"]
+                runtime = load_config("runtime")["runtime"]
+                navigation = load_config("navigation")["navigation"]
+                if navigation["enabled"]:
+                    self.estimator = ProportionalNavigation(navigation)
+                self.tracker = VisionTracker(project_root() / model["engine"], device=runtime["device"])
+        except Exception:
+            self.stop()
+            raise
 
     def step(self) -> FrameTelemetry | None:
         if self.source is None:
             return None
+        start = time.perf_counter()
         success, frame, dt, frame_id = self.source.read_frame()
         if not success:
             self.stop()
             return None
+        tracking = navigation = None
+        if self.tracker is not None:
+            height, width = frame.shape[:2]
+            if self.estimator is not None and (width, height) != self.estimator.image_size:
+                raise ValueError(f"Expected frame size {self.estimator.image_size}, got {(width, height)}")
+            tracking = self.tracker.process_frame(frame)
+            if self.estimator is not None:
+                navigation = self.estimator.process(tracking, dt, frame_id, (width, height),
+                                                    self.source.fps_is_estimated)
         now = time.perf_counter()
         if self._last_tick is not None and now > self._last_tick:
             fps = 1.0 / (now - self._last_tick)
@@ -64,11 +101,21 @@ class PipelineRuntime:
             duration_ms=self.source.duration_ms,
             source_fps=self.source.fps,
             playback_fps=self._playback_fps,
+            tracking=tracking,
+            navigation=navigation,
+            fps_is_estimated=self.source.fps_is_estimated,
+            analysis_fps=1.0 / (now - start) if tracking is not None and now > start else None,
         )
 
     def stop(self) -> None:
         if self.source is not None:
             self.source.close()
             self.source = None
+        if self.tracker is not None:
+            self.tracker.reset()
+            self.tracker = None
+        if self.estimator is not None:
+            self.estimator.reset()
+            self.estimator = None
         self._last_tick = None
         self._playback_fps = 0.0

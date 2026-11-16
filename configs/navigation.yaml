@@ -1,6 +1,6 @@
 navigation:
   mode: proportional_navigation
-  enabled: false
+  enabled: true
   guidance_gain: 3.0
   camera: DJI Lito X1
   target: E99 Pro (black)
@@ -12,5 +12,5 @@ navigation:
   cx: 960.0
   cy: 540.0
   target_width_m: 0.185
-  closing_speed_window: 3
+  closing_speed_window: 6
   ttc_denominator_min: 0.0001

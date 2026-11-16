@@ -1,4 +1,6 @@
 # Ultralytics 🚀 AGPL-3.0 License - https://ultralytics.com/license
+# Adapted from Ultralytics v8.4.190: https://github.com/ultralytics/ultralytics/blob/v8.4.190/ultralytics/cfg/trackers/botsort.yaml
+# Changes: track_high_thresh, track_buffer, match_thresh and appearance_thresh; comments adjusted.
 # BoT-SORT tracker defaults for mode="track"
 
 tracker_type: botsort # (str) Tracker backend: botsort

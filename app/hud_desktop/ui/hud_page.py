@@ -81,14 +81,13 @@ class HudPage(QWidget):
         self._time_label.setText(
             f"{format_ms(telemetry.current_ms)} / {format_ms(telemetry.duration_ms)}"
         )
-        self.telemetry_panel.update_playback(
-            telemetry.playback_fps, telemetry.frame_id, telemetry.progress_percent
-        )
+        self.status_strip.update_status(telemetry)
+        self.telemetry_panel.update_telemetry(telemetry)
 
     def show_error(self, message: str) -> None:
         self._set_status("ERROR", "statusError")
         self._playback_status.setToolTip(message)
-        self.video_canvas.show_error()
+        self.video_canvas.show_error(message)
 
     def request_back(self) -> None:
         self.back_requested.emit()

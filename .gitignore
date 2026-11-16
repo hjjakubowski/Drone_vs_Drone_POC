@@ -45,16 +45,17 @@ datasets/recordings/processed/
 datasets/recordings/exports/
 datasets/AOD_4
 datasets/ds_drone_hel_plane
+research/reports/latex
+plans
+audit.md
 
-*.onnx
-*.engine
-*.pt
-*.pth
-*.weights
+#*.onnx
+#*.engine
+#*.pt
+#*.pth
+#*.weights
 
 # Research artifacts
 research/**/outputs/
 research/**/results/
 research/**/plots/
-
-plans

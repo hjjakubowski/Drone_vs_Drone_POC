@@ -1,5 +1,5 @@
 runtime:
   video_source_dir: datasets/recordings
   auto_return_to_views: true
-  backend_enabled: false
+  backend_enabled: true
   device: cuda:0
